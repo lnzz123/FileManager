@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.example.filemanager.R
+import com.example.filemanager.model.FileItem
 import com.example.filemanager.util.PrefsUtils.FileExplorerTab.listFoldersFirst
 import com.example.filemanager.util.PrefsUtils.FileExplorerTab.sortingMethod
 import java.io.*
@@ -622,16 +623,17 @@ A file with the same name exists."""
         val pi = context.packageManager.getPackageArchiveInfo(file.absolutePath, 0)
         return if (pi != null) {
             // 设置应用信息的源目录和公共源目录
-            pi.applicationInfo.sourceDir = file.absolutePath
-            pi.applicationInfo.publicSourceDir = file.absolutePath
+            pi.applicationInfo?.sourceDir = file.absolutePath
+            pi.applicationInfo?.publicSourceDir = file.absolutePath
             // 加载 APK 文件的图标
-            pi.applicationInfo.loadIcon(context.packageManager)
+            pi.applicationInfo?.loadIcon(context.packageManager)
         }
         // 如果获取包信息失败，则返回默认的未知文件图标
         else {
-            androidx.core.content.ContextCompat.getDrawable(context, R.drawable.unknown_file_extension)
+            ContextCompat.getDrawable(context, R.drawable.unknown_file_extension)
         }
     }
+
 
     /**
      * 获取 APK 文件的名称。
@@ -645,11 +647,14 @@ A file with the same name exists."""
         val pi = context.packageManager.getPackageArchiveInfo(file.absolutePath, 0)
         return if (pi != null) {
             // 获取 APK 文件的应用标签并转换为字符串
-            context.packageManager.getApplicationLabel(pi.applicationInfo).toString()
+            pi.applicationInfo?.let { appInfo ->
+                context.packageManager.getApplicationLabel(appInfo).toString()
+            }
         }
         // 如果获取包信息失败，则返回 null
         else {
-            pi?.applicationInfo?.name
+            null
         }
     }
+
 }
