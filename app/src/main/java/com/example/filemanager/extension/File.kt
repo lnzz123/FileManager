@@ -24,7 +24,7 @@ fun File.getFileDetails(): String {
     // 创建一个 StringBuilder 对象，用于构建文件详细信息字符串
     val sb = StringBuilder()
     // 添加文件的最后修改日期
-    sb.append(getLastModifiedDate())
+    sb.append(getLastModifiedDate("yyyy-MM-dd"))
     // 添加分隔符
     sb.append("  |  ")
     // 如果是文件，则添加文件大小

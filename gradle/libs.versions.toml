@@ -38,7 +38,6 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 easyPrefs = { group = "com.pixplicity.easyprefs", name = "EasyPrefs", version.ref = "easyPrefs" }
 zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
 bumptech = { group = "com.github.bumptech.glide", name = "glide", version.ref = "bumptech" }
-bumptech-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "bumptech" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 

@@ -2,17 +2,13 @@ package com.example.filemanager.util
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageInfo
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.text.Editable
-import android.text.TextWatcher
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.example.filemanager.R
-import com.example.filemanager.model.FileItem
 import com.example.filemanager.util.PrefsUtils.FileExplorerTab.listFoldersFirst
 import com.example.filemanager.util.PrefsUtils.FileExplorerTab.sortingMethod
 import java.io.*

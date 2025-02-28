@@ -1,7 +1,8 @@
 package com.example.filemanager.component
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -9,49 +10,75 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.*
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import com.example.filemanager.R
 import com.example.filemanager.extension.withAlpha
+import com.example.filemanager.model.FileList
 import com.example.filemanager.ui.theme.AppColors
 import java.io.File
 
-@Preview(device = "spec:parent=pixel_5,orientation=landscape")
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FileItem(){
-    Row (modifier = Modifier.fillMaxWidth().height(80.dp), verticalAlignment = Alignment.CenterVertically) {
-        CustomCheckbox(
-            checked = false,
-            onCheckedChange = {  }
-        )
-        Spacer(modifier = Modifier.width(8.dp))
+fun FileItem(
+    fileLists: FileList,
+    isSelected: Boolean,
+    operationMode: Boolean,
+    clickable: () -> Any = {  },
+    longClickable: () -> Unit? = {  },
+    onSelectionChange: (Boolean) -> Unit ) {
+    Row (modifier = Modifier
+        .fillMaxWidth()
+        .height(80.dp)
+        .combinedClickable(
+            onLongClick = { longClickable() },
+            onClick = { clickable() }
+        ), verticalAlignment = Alignment.CenterVertically) {
+        if (operationMode) {
+            CustomCheckbox(
+                checked = isSelected,
+                onCheckedChange = onSelectionChange
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
         Card(
+            //设置长按事件
             modifier = Modifier.fillMaxSize(),
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White.withAlpha(0.07f)),
         ){
-            Box(modifier = Modifier.fillMaxSize().padding(end = 24.dp))
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(end = 24.dp))
             {
                 Row (
-                    modifier = Modifier.fillMaxHeight().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically)
                 {
-                    FileIcon(modifier = Modifier.fillMaxHeight(), isDirectory = true)
+                    FileIcon(file = fileLists.file, modifier = Modifier.fillMaxHeight())
                     Spacer(modifier = Modifier.width(16.dp))
                     Column (modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-                        Text(text = "文件名称", fontSize = 16.sp, color = AppColors.WhiteMedium)
+                        Text(text = fileLists.name, fontSize = 16.sp, color = AppColors.WhiteMedium)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = "2025-06-12｜23.98M", fontSize = 12.sp, color = AppColors.WhiteLow)
+                        Text(text = fileLists.details, fontSize = 12.sp, color = AppColors.WhiteLow)
                     }
                 }
                 Icon(painter = painterResource(id = R.drawable.ic_right),
                     contentDescription = "more",
                     tint = Color.Unspecified,
-                    modifier = Modifier.size(32.dp).align(Alignment.CenterEnd))
+                    modifier = Modifier
+                        .size(32.dp)
+                        .align(Alignment.CenterEnd))
             }
         }
     }
@@ -98,8 +125,6 @@ private val archiveExtensions = setOf("7z", "gz", "tar")
  * 用于显示文件图标的可组合函数。
  *
  * @param file 文件对象，可选参数，默认为 null。
- * @param extension 文件扩展名，可选参数，默认为 null。
- * @param isDirectory 是否为目录，可选参数，默认为 false。
  * @param modifier 用于修改组件布局和样式的修饰符，可选参数，默认为 Modifier。
  * @param contentDescription 图像的内容描述，用于无障碍访问，可选参数，默认为 null。
  */
@@ -107,13 +132,11 @@ private val archiveExtensions = setOf("7z", "gz", "tar")
 @Composable
 fun FileIcon(
     file: File? = null,
-    extension: String? = null,
-    isDirectory: Boolean = false,
     modifier: Modifier = Modifier.size(48.dp),
     contentDescription: String? = null
 ) {
     // 调用 calculateIconRes 函数计算文件对应的图标资源 ID
-    val iconRes = calculateIconRes(file, extension, isDirectory)
+    val iconRes = calculateIconRes(file)
 
     // 使用 Image 组件显示图标
     Image(
@@ -135,23 +158,17 @@ fun FileIcon(
  * 对于特殊类型的文件，会检查特殊类型集合；如果都不匹配，则返回未知类型图标。
  *
  * @param file 文件对象，可选参数，若传入 null 则不使用文件对象获取扩展名。
- * @param extension 文件扩展名，可选参数，若传入非空值则优先使用该扩展名。
- * @param isDirectory 是否为目录，若为 true 则返回目录图标。
  * @return 对应的图标资源ID。
  */
 @Composable
 private fun calculateIconRes(
     file: File?,
-    extension: String?,
-    isDirectory: Boolean
 ): Int {
     // 优先处理目录类型，如果是目录则直接返回目录图标资源ID
-    if (isDirectory) return R.drawable.ic_folder
+    if (file?.isDirectory!!) return R.drawable.ic_folder
 
     // 获取扩展名的三种方式，按优先级依次选择
     val finalExtension = when {
-        // 若传入的扩展名不为空且不为 null，则使用传入的扩展名
-        !extension.isNullOrEmpty() -> extension
         // 若传入了文件对象，则从文件对象中获取扩展名并转换为小写
         file != null -> file.extension.lowercase()
         // 若以上两种情况都不满足，则使用空字符串作为扩展名
