@@ -1,9 +1,6 @@
 package com.example.filemanager.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -20,7 +17,7 @@ fun AppTheme(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(AppColors.Gradients.GlobalBackground)
+                    .background(ThemeColors.Gradients.GlobalBackground)
             ) {
                 content()
             }

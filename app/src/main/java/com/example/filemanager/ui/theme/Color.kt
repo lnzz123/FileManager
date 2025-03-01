@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
 
-object AppColors {
+object ThemeColors {
     // 基础色
     val TextFocus = Color(0xFFFF8614)// 文字焦点色
     val GraphicFocus = Color(0xFFCB7231)// 图形焦点色

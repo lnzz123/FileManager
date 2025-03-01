@@ -1,23 +1,19 @@
 package com.example.filemanager.screen
 
+import android.content.Context
+import android.os.Build
 import android.os.Environment
+import android.os.storage.StorageManager
+import android.os.storage.StorageVolume
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,8 +24,13 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,15 +39,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.example.filemanager.R
 import com.example.filemanager.component.AppButton
 import com.example.filemanager.component.ButtonState
 import com.example.filemanager.component.CustomCheckbox
-import com.example.filemanager.component.CustomDialog
 import com.example.filemanager.component.FileItem
 import com.example.filemanager.component.SecondaryActionBar
-import com.example.filemanager.component.TipDialog
 import com.example.filemanager.extension.getFileDetails
 import com.example.filemanager.extension.getUsedMemoryBytes
 import com.example.filemanager.extension.openFileWith
@@ -55,10 +53,9 @@ import com.example.filemanager.ui.theme.ThemeColors
 import com.example.filemanager.util.FileUtils
 import java.io.File
 
-
 @Preview(device = "spec:parent=pixel_5,orientation=landscape")
 @Composable
-fun InternalStorageScreen() {
+fun USBScreen() {
     val context = LocalContext.current
     // 存储空间信息
     var storageInfo by remember { mutableStateOf("Loading...") }
@@ -129,19 +126,29 @@ fun InternalStorageScreen() {
         )
     }
 
-    BackHandler(enabled = currentPath != Environment.getExternalStorageDirectory().path) {
-        currentPath = File(currentPath).parent ?: Environment.getExternalStorageDirectory().path
+    BackHandler(enabled = currentPath != getDefaultRootPath(context)) {
+        currentPath = File(currentPath).parent ?: getDefaultRootPath(context)
     }
 
     LaunchedEffect (Unit){
-        // 更新当前路径为外部存储目录的路径
-        currentPath = Environment.getExternalStorageDirectory().path
-        // 获取外部存储目录已使用的内存字节数
-        val used = Environment.getExternalStorageDirectory().getUsedMemoryBytes()
-        // 获取外部存储目录可用的内存字节数
-        val available = Environment.getExternalStorageDirectory().usableSpace
-        // 格式化存储信息，显示已使用和可用内存
-        storageInfo = FileUtils.getFormattedSize(used) +"/"+ FileUtils.getFormattedSize(available)
+        val usbPath = context.getUsbStoragePath()
+        currentPath = if (!usbPath.isNullOrEmpty()) {
+            // 验证USB路径可访问
+            val usbDir = File(usbPath)
+            if (usbDir.exists() && usbDir.canRead()) {
+                usbPath
+            } else {
+                // 处理无权限情况
+                Environment.getExternalStorageDirectory().path
+            }
+        } else {
+            // 无USB设备时的处理
+            Environment.getExternalStorageDirectory().path
+        }
+        // 存储空间信息计算（需要适配USB路径）
+        val usedSpace = File(currentPath).getUsedMemoryBytes()
+        val totalSpace = File(currentPath).totalSpace
+        storageInfo = "${FileUtils.getFormattedSize(usedSpace)}/${FileUtils.getFormattedSize(totalSpace)}"
     }
     /**
      * 当当前路径 currentPath 发生变化时，重新加载文件列表和存储信息
@@ -249,7 +256,7 @@ fun InternalStorageScreen() {
                         )
                     },
                 )
-                val btn = @Composable {image: Int ,action:String,chick: () -> Unit ->
+                val btn = @Composable { image: Int, action:String, chick: () -> Unit ->
                     Icon(
                         painter = painterResource(id = image),
                         contentDescription = action,
@@ -257,11 +264,11 @@ fun InternalStorageScreen() {
                         modifier = Modifier
                             .size(32.dp)
                             .clickable { chick() }
-                        )
+                    )
                 }
                 LazyRow(
                     modifier = Modifier
-                    .fillMaxHeight(),
+                        .fillMaxHeight(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                     if (operationMode) {
@@ -284,7 +291,7 @@ fun InternalStorageScreen() {
         LazyColumn(modifier = Modifier
             .fillMaxHeight()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-        , verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            , verticalArrangement = Arrangement.spacedBy(16.dp)) {
             itemsIndexed(fileLists) { index, fileList ->
                 FileItem(
                     fileLists = fileList,
@@ -333,75 +340,34 @@ fun InternalStorageScreen() {
     }
 }
 
-// 弹窗类型枚举
-enum class DialogType {
-    NEW_FOLDER,
-    RENAME,
-    DELETE, // 删除类型使用纯文本提示
+
+// 获取当前存储根路径
+fun getDefaultRootPath(context: Context): String {
+    return context.getUsbStoragePath() ?: Environment.getExternalStorageDirectory().path
 }
 
-// 弹窗数据类（扩展提示字段）
-data class DialogData(
-    val currentName: String = "",
-    val targetFile: File? = null,
-    val tipContent: String = "" // 新增提示文本字段
-)
-
-// 通用弹窗组件
-@Composable
-fun UniversalDialog(
-    dialogType: DialogType,
-    initialData: DialogData,
-    onDismiss: () -> Unit,
-    onConfirm: (DialogData) -> Unit
-) {
-    var currentData by remember { mutableStateOf(initialData) }
-
-    when (dialogType) {
-        DialogType.DELETE -> {
-            TipDialog(
-                showDialog = true,
-                title = "删除确认",
-                onDismissRequest = onDismiss,
-                message = currentData.tipContent, // 直接使用传入的提示文本
-                onConfirmText = "确定",
-                onDismissText = "取消",
-                onConfirm = { onConfirm(currentData) },
-                onDismiss = onDismiss
-            )
-        }
-        else -> { // 其他类型保持使用带输入框的CustomDialog
-            CustomDialog(
-                showDialog = true,
-                onDismissRequest = onDismiss,
-                title = when (dialogType) {
-                    DialogType.NEW_FOLDER -> "新建文件夹"
-                    DialogType.RENAME -> "重命名"
-                    else -> ""
-                },
-                content = {
-                    Column(Modifier.fillMaxWidth()) {
-                        TextField(
-                            value = currentData.currentName,
-                            onValueChange = { currentData = currentData.copy(currentName = it) },
-                            label = { Text(
-                                when (dialogType) {
-                                    DialogType.NEW_FOLDER -> "文件夹名称"
-                                    else -> "新名称"
-                                }
-                            )}
-                        )
+fun Context.getUsbStoragePath(): String? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        val storageManager = getSystemService(Context.STORAGE_SERVICE) as StorageManager
+        storageManager.storageVolumes
+            .firstOrNull { volume ->
+                volume.isRemovable && volume.state == Environment.MEDIA_MOUNTED
+            }
+            ?.let { volume ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    volume.directory?.path
+                } else {
+                    // 通过反射获取低版本路径
+                    try {
+                        val getPath = StorageVolume::class.java.getMethod("getPath")
+                        getPath.invoke(volume) as String
+                    } catch (e: Exception) {
+                        null
                     }
-                },
-                onConfirmText = when (dialogType) {
-                    DialogType.NEW_FOLDER -> "确定"
-                    DialogType.RENAME -> "保存"
-                    else -> ""
-                },
-                onDismissText = "取消",
-                onConfirm = { onConfirm(currentData) },
-                onDismiss = onDismiss
-            )
-        }
+                }
+            }
+    } else {
+        // 传统方式获取可能不准确
+        System.getenv("SECONDARY_STORAGE")?.split(":").orEmpty().firstOrNull()
     }
 }

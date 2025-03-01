@@ -7,20 +7,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.filemanager.R
 import com.example.filemanager.extension.withAlpha
-import com.example.filemanager.ui.theme.AppColors
+import com.example.filemanager.ui.theme.ThemeColors
 
 @Composable
 fun AppButton(
@@ -44,7 +39,7 @@ fun AppButton(
             ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
         )
         ButtonState.FOCUSED.ordinal -> Pair(
-            ButtonDefaults.buttonColors(AppColors.GraphicFocus), // 焦点状态背景色
+            ButtonDefaults.buttonColors(ThemeColors.GraphicFocus), // 焦点状态背景色
             ButtonDefaults.buttonElevation(defaultElevation = 0.dp) // 焦点状态阴影
         )
         ButtonState.DISABLED.ordinal -> Pair(
@@ -52,7 +47,7 @@ fun AppButton(
             ButtonDefaults.buttonElevation(defaultElevation = 0.dp) // 失效状态无阴影
         )
         ButtonState.DISABLED_FOCUSED.ordinal -> Pair(
-            ButtonDefaults.buttonColors(AppColors.GraphicFocus.withAlpha(0.4f)), // 焦点失效状态背景色
+            ButtonDefaults.buttonColors(ThemeColors.GraphicFocus.withAlpha(0.4f)), // 焦点失效状态背景色
             ButtonDefaults.buttonElevation(defaultElevation = 0.dp) // 焦点失效状态阴影
         )
         else -> Pair(colors, elevation)
@@ -73,7 +68,7 @@ fun AppButton(
         if (text != null) {
             Text(
                 text = text,
-                color = AppColors.WhiteHigh
+                color = ThemeColors.WhiteHigh
             )
         }
         // 支持自定义内容

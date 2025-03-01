@@ -11,7 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.filemanager.R
-import com.example.filemanager.ui.theme.AppColors
+import com.example.filemanager.ui.theme.ThemeColors
 
 @Preview
 @Composable
@@ -29,7 +29,7 @@ fun AppTopBar(title:String = "TopBarTitle", content: @Composable () -> Unit = {}
         )
         Text(
             text = title,
-            color = AppColors.WhiteHigh,
+            color = ThemeColors.WhiteHigh,
             fontSize = 18.sp,
             modifier = Modifier.padding(start = 16.dp)
         )

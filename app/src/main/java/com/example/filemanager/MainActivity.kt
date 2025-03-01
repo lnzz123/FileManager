@@ -15,11 +15,10 @@ import androidx.compose.foundation.background
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.filemanager.screen.HomeScreen
-import com.example.filemanager.ui.theme.AppColors
+import com.example.filemanager.ui.theme.ThemeColors
 import com.example.filemanager.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
@@ -112,12 +111,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(
     name: String,
-    modifier: Modifier = Modifier.background(AppColors.Gradients.IconGrayscale)
+    modifier: Modifier = Modifier.background(ThemeColors.Gradients.IconGrayscale)
 ) {
     Text(
         text = "Hello $name!",
         modifier = modifier,
-        color = AppColors.TextFocus
+        color = ThemeColors.TextFocus
     )
 }
 

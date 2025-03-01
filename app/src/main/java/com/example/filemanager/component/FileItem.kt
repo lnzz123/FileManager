@@ -10,11 +10,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -23,7 +18,7 @@ import androidx.compose.ui.unit.*
 import com.example.filemanager.R
 import com.example.filemanager.extension.withAlpha
 import com.example.filemanager.model.FileList
-import com.example.filemanager.ui.theme.AppColors
+import com.example.filemanager.ui.theme.ThemeColors
 import java.io.File
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -68,9 +63,9 @@ fun FileItem(
                     FileIcon(file = fileLists.file, modifier = Modifier.fillMaxHeight())
                     Spacer(modifier = Modifier.width(16.dp))
                     Column (modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-                        Text(text = fileLists.name, fontSize = 16.sp, color = AppColors.WhiteMedium)
+                        Text(text = fileLists.name, fontSize = 16.sp, color = ThemeColors.WhiteMedium)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = fileLists.details, fontSize = 12.sp, color = AppColors.WhiteLow)
+                        Text(text = fileLists.details, fontSize = 12.sp, color = ThemeColors.WhiteLow)
                     }
                 }
                 Icon(painter = painterResource(id = R.drawable.ic_right),
